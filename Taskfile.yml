@@ -1,0 +1,48 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  VERSION_GODOT: '4.4.1-stable'
+  BIN_GODOT: Godot_v{{.VERSION_GODOT}}_win64.exe
+
+tasks:
+  default:
+    cmds:
+      - task: bin
+    silent: true
+
+  godot:
+    desc: Run Godot
+    cmds:
+      - bin\\{{.BIN_GODOT}} --editor --path .
+  
+  x:
+    desc: foobar
+    cmds:
+    - bin/{{.BIN_GODOT}} --path . --headless --script DatRead/test.gd --quit
+    # --quit = quit after the first iteration
+    
+
+  ####################################################################
+  #  Binary download tasks
+  ####################################################################
+
+  bin:
+    dir: bin
+    desc: Download required binary files
+    cmds:
+    - task: bin-godot
+    - echo "" > .gdignore
+    
+  bin-godot:
+    dir: bin
+    status: [ "test -f {{.BIN_GODOT}}" ]
+    vars:
+      ZIP_FILE: Godot_v{{.VERSION_GODOT}}_win64.exe.zip
+      ZIP_URL: https://github.com/godotengine/godot-builds/releases/download/{{.VERSION_GODOT}}/{{.ZIP_FILE}}
+    cmds:
+    - echo "" > _sc_ # https://docs.godotengine.org/en/stable/tutorials/io/data_paths.html#self-contained-mode
+    - curl -LO {{.ZIP_URL}}
+    - defer: rm {{.ZIP_FILE}}
+    - tar -xf {{.ZIP_FILE}}
